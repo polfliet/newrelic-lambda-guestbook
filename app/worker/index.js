@@ -16,7 +16,9 @@ exports.handler = (event, context, callback) => {
         var params = {
             TableName: 'GUESTBOOK_MESSAGES',
             Item: {
-                'MESSAGE' : {S: message}
+                'CHANNEL': {S: '1'},
+                'MESSAGE': {S: message},
+                'TIMESTAMP': {S: new Date().toISOString()}
             }
         };
         console.log('Worker saving to DynamoDB');
