@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: 'Lambda + SQS for New Relic Guestbook'
+
+Resources:
+  # Roles
+  LambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'role-lambda'
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+            - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+              - lambda.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/AmazonSQSFullAccess
+      Path: /
+
+  # DynamoDB Table
+  MessagesTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: GUESTBOOK_MESSAGES
+      AttributeDefinitions:
+        - AttributeName: CHANNEL
+          AttributeType: S
+        - AttributeName: TIMESTAMP
+          AttributeType: S
+      KeySchema:
+        - AttributeName: CHANNEL
+          KeyType: HASH
+        - AttributeName: TIMESTAMP
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: '5'
+        WriteCapacityUnits: '5'
+
+  # SQS queues
+  FrontendQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: 'guestbook-frontend'
+      DelaySeconds: '0'
+      MaximumMessageSize: '262144'
+      MessageRetentionPeriod: '345600'
+      ReceiveMessageWaitTimeSeconds: '0'
+      VisibilityTimeout: '30'
+  ParserQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: 'guestbook-parser'
+      DelaySeconds: '0'
+      MaximumMessageSize: '262144'
+      MessageRetentionPeriod: '345600'
+      ReceiveMessageWaitTimeSeconds: '0'
+      VisibilityTimeout: '30'
+
+  # Lambda functions
+  ParserFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties: 
+      Code: 
+        S3Bucket: 'guestbook-lambda'
+        S3Key: 'parser.zip'
+      FunctionName: 'ParserFunction'
+      Handler: 'index.handler'
+      Role:
+        Fn::GetAtt:
+          - LambdaRole
+          - Arn
+      Runtime: 'nodejs8.10'
+  WorkerFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties: 
+      Code: 
+        S3Bucket: 'guestbook-lambda'
+        S3Key: 'worker.zip'
+      FunctionName: 'WorkerFunction'
+      Handler: 'index.handler'
+      Role:
+        Fn::GetAtt:
+          - LambdaRole
+          - Arn
+      Runtime: 'nodejs8.10'
+
+  # SQS - Lambda mapping
+  FrontendQueueToParserMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn: !GetAtt FrontendQueue.Arn
+      FunctionName: !GetAtt ParserFunction.Arn
+  ParserQueueToWorkerMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn: !GetAtt ParserQueue.Arn
+      FunctionName: !GetAtt WorkerFunction.Arn
