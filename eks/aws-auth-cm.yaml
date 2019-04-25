@@ -5,7 +5,7 @@ metadata:
   namespace: kube-system
 data:
   mapRoles: |
-    - rolearn: arn:aws:iam::<AWS_ACCOUNT_ID>:role/guestbook-worker-nodes-NodeInstanceRole-JKHG1M2BVCZM
+    - rolearn: arn:aws:iam::<AWS_ACCOUNT_ID>:role/NewRelicGuestbookNodeInstanceRole
       username: system:node:{{EC2PrivateDNSName}}
       groups:
         - system:bootstrappers
