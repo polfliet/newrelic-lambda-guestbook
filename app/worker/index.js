@@ -1,10 +1,13 @@
+const newrelic = require('newrelic');
+require('@newrelic/aws-sdk');
+
 var AWS = require('aws-sdk');
 var db = new AWS.DynamoDB({
     region: 'eu-west-1'
 });
 
 // Worker Lambda function listens to guestbook-parser queue
-exports.handler = (event, context, callback) => {
+module.exports.handler = newrelic.setLambdaHandler((event, context, callback) => {
     // Process each SQS event
     event.Records.forEach(record => {
         var message = record.body;
@@ -30,4 +33,4 @@ exports.handler = (event, context, callback) => {
   });
 
   return {};
-};
+});

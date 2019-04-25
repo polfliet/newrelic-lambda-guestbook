@@ -1,10 +1,13 @@
+const newrelic = require('newrelic');
+require('@newrelic/aws-sdk');
+
 var AWS = require('aws-sdk');
 var sqs = new AWS.SQS({
     region: 'eu-west-1'
 });
 
 // Parser Lambda function listens to guestbook-frontend queue
-exports.handler = function(event, context, callback) {
+module.exports.handler = newrelic.setLambdaHandler((event, context, callback) => {
     // Process each SQS event
     event.Records.forEach(record => {
         var message = record.body;
@@ -22,6 +25,7 @@ exports.handler = function(event, context, callback) {
         };
 
         console.log('Parser pushing to queue: ' + message);
+        //newrelic.recordCustomEvent(‘GuestbookData’, {message: message});
         sqs.sendMessage(params, function(err, data) {
             if (err) {
                 console.log('Parser error sending to queue: ', err);
@@ -34,4 +38,4 @@ exports.handler = function(event, context, callback) {
             callback(null, response);
         });
     });
-}
+});
