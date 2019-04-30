@@ -12,6 +12,13 @@ module.exports.handler = newrelic.setLambdaHandler((event, context, callback) =>
     event.Records.forEach(record => {
         var message = record.body;
 
+        var traceContext = '';
+        if (record.messageAttributes.TraceContext != undefined) {
+            traceContext = record.messageAttributes.TraceContext.stringValue;
+            var transaction = newrelic.getTransaction();
+            transaction.acceptDistributedTracePayload(traceContext);
+        }
+
         // Transform the message
         console.log('Parser received: ' + message);
         message = message.toUpperCase();
@@ -21,7 +28,13 @@ module.exports.handler = newrelic.setLambdaHandler((event, context, callback) =>
         var queueUrl = 'https://sqs.eu-west-1.amazonaws.com/' + accountId + '/guestbook-parser';
         var params = {
             MessageBody: message,
-            QueueUrl: queueUrl
+            QueueUrl: queueUrl,
+            MessageAttributes: {
+                TraceContext:  {
+                    DataType: 'String',
+                    StringValue: traceContext
+                }
+            }
         };
 
         console.log('Parser pushing to queue: ' + message);

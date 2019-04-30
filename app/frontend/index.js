@@ -65,11 +65,21 @@ app.get('/message', function (req, res) {
 
 // Post a message to the guestbook
 app.post('/message', function(req, res) {
+    newrelic.setTransactionName('Send message');
+    var transaction = newrelic.getTransaction();
+    var payload = transaction.createDistributedTracePayload();
+
     var message = req.body.message;
 
     var params = {
         MessageBody: message,
-        QueueUrl: queueUrl
+        QueueUrl: queueUrl,
+        MessageAttributes: {
+            TraceContext:  {
+                DataType: 'String',
+                StringValue: payload.text()
+            }
+        }
     };
 
     console.log('Frontend pushing to queue: ' + message);

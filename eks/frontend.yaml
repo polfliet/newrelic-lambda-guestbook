@@ -42,7 +42,7 @@ spec:
               name: guestbook-secret
               key: new_relic_license_key
         - name: NEW_RELIC_APP_NAME
-          value: New Relic Guestbook k8s - Frontend
+          value: New Relic Lambda Guestbook EKS - Frontend
         - name: GET_HOSTS_FROM
           value: dns
           # If your cluster config does not include a dns service, then to

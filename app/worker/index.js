@@ -12,6 +12,12 @@ module.exports.handler = newrelic.setLambdaHandler((event, context, callback) =>
     event.Records.forEach(record => {
         var message = record.body;
 
+        if (record.messageAttributes.TraceContext != undefined) {
+            var traceContext = record.messageAttributes.TraceContext.stringValue;
+            var transaction = newrelic.getTransaction();
+            transaction.acceptDistributedTracePayload(traceContext);
+        }
+
         // Transform the message
         console.log('Worker received: ' + message);
         
