@@ -12,12 +12,13 @@ module.exports.handler = newrelic.setLambdaHandler((event, context, callback) =>
     event.Records.forEach(record => {
         var message = record.body;
 
+        var transaction = newrelic.getTransaction();
         var traceContext = '';
         if (record.messageAttributes.TraceContext != undefined) {
-            traceContext = record.messageAttributes.TraceContext.stringValue;
-            var transaction = newrelic.getTransaction();
+            traceContext = record.messageAttributes.TraceContext.stringValue;    
             transaction.acceptDistributedTracePayload(traceContext);
         }
+        var payload = transaction.createDistributedTracePayload();
 
         // Transform the message
         console.log('Parser received: ' + message);
@@ -32,7 +33,7 @@ module.exports.handler = newrelic.setLambdaHandler((event, context, callback) =>
             MessageAttributes: {
                 TraceContext:  {
                     DataType: 'String',
-                    StringValue: traceContext
+                    StringValue: payload.text()
                 }
             }
         };
