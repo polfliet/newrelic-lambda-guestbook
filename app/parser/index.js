@@ -3,7 +3,7 @@ require('@newrelic/aws-sdk');
 
 var AWS = require('aws-sdk');
 var sqs = new AWS.SQS({
-    region: 'eu-west-1'
+    region: process.env.AWS_REGION
 });
 
 // Parser Lambda function listens to guestbook-frontend queue
@@ -26,7 +26,7 @@ module.exports.handler = newrelic.setLambdaHandler((event, context, callback) =>
 
         // Send this message to SQS guestbook-parser
         var accountId = context.invokedFunctionArn.split(":")[4];
-        var queueUrl = 'https://sqs.eu-west-1.amazonaws.com/' + accountId + '/guestbook-parser';
+        var queueUrl = 'https://sqs.' + process.env.AWS_REGION + '.amazonaws.com/' + accountId + '/guestbook-parser';
         var params = {
             MessageBody: message,
             QueueUrl: queueUrl,

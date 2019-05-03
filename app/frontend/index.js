@@ -5,12 +5,8 @@ const http = require('http');
 const querystring = require('querystring');
 
 var AWS = require('aws-sdk');
-var db = new AWS.DynamoDB({
-    region: 'eu-west-1'
-});
-var sqs = new AWS.SQS({
-    region: 'eu-west-1'
-});
+var db = new AWS.DynamoDB();
+var sqs = new AWS.SQS();
 
 // Get SQS queue
 var queueUrl;
@@ -65,7 +61,7 @@ app.get('/message', function (req, res) {
 
 // Post a message to the guestbook
 app.post('/message', function(req, res) {
-    newrelic.setTransactionName('Send message');
+    //newrelic.setTransactionName('Send message');
     var transaction = newrelic.getTransaction();
     var payload = transaction.createDistributedTracePayload();
 
@@ -89,7 +85,7 @@ app.post('/message', function(req, res) {
         }
     });
 
-    res.redirect('/');
+    res.status(200).send('OK');
 });
 
 // Health check

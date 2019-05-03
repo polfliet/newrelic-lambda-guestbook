@@ -3,7 +3,7 @@ require('@newrelic/aws-sdk');
 
 var AWS = require('aws-sdk');
 var db = new AWS.DynamoDB({
-    region: 'eu-west-1'
+    region: process.env.AWS_REGION
 });
 
 // Worker Lambda function listens to guestbook-parser queue

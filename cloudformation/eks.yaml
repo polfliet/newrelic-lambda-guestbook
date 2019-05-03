@@ -76,7 +76,7 @@ Resources:
         Ref: VPC
       Tags:
       - Key: Name
-        Value: "NewRelicGuestbookSubnet01"
+        Value: 'NewRelicGuestbookSubnet01'
   Subnet02:
     Type: AWS::EC2::Subnet
     Properties:
@@ -90,7 +90,7 @@ Resources:
         Ref: VPC
       Tags:
       - Key: Name
-        Value: "NewRelicGuestbookSubnet02"
+        Value: 'NewRelicGuestbookSubnet02'
   Subnet01RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -117,7 +117,7 @@ Resources:
   EKSCluster:
     Type: AWS::EKS::Cluster
     Properties:
-      Name: {"Ref": "ClusterName"}
+      Name: {'Ref': 'ClusterName'}
       Version: '1.11'
       RoleArn:
         Fn::Sub: arn:aws:iam::${AWS::AccountId}:role/eks-role

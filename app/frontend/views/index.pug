@@ -8,9 +8,9 @@ html
     div Last sent message:&nbsp;
       span(id='message-text') ...
     div
-      form(action='/message', method='post')
+      form(action='/message', id='form' method='post')
         label(for='message') Message
-        input(type='text', size=30, name='message')
+        input(type='text', id='message' size=30, name='message')
         br
         input(type='submit')
     script(type='text/javascript').
@@ -19,5 +19,17 @@ html
           $('#message-text').text(data);
         });
       }
+      $('#form').submit(function(e){
+          e.preventDefault();
+          $('#message').val('');
+          $.ajax({
+              url:'/message',
+              type: 'post',
+              data:$('#form').serialize(),
+              success:function(data){
+                  console.log('Message sent', data);
+              }
+          });
+      });
       getLastMessage();
       setInterval(getLastMessage, 1000);
