@@ -5,6 +5,8 @@ const http = require('http');
 const querystring = require('querystring');
 
 var AWS = require('aws-sdk');
+AWS.config.update({region: process.env.AWS_REGION});
+console.log('AWS_REGION: ' + process.env.AWS_REGION);
 var db = new AWS.DynamoDB();
 var sqs = new AWS.SQS();
 
