@@ -72,10 +72,11 @@ Resources:
     Type: 'AWS::Lambda::Function'
     Properties: 
       Code: 
-        S3Bucket: 'guestbook-lambda'
+        S3Bucket: 'newrelic-lambda-guestbook'
         S3Key: 'parser.zip'
       FunctionName: 'ParserFunction'
       Handler: 'index.handler'
+      MemorySize: 512
       Role:
         Fn::GetAtt:
           - LambdaRole
@@ -94,10 +95,11 @@ Resources:
     Type: 'AWS::Lambda::Function'
     Properties: 
       Code: 
-        S3Bucket: 'guestbook-lambda'
+        S3Bucket: 'newrelic-lambda-guestbook'
         S3Key: 'worker.zip'
       FunctionName: 'WorkerFunction'
       Handler: 'index.handler'
+      MemorySize: 512
       Role:
         Fn::GetAtt:
           - LambdaRole
