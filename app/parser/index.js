@@ -39,7 +39,7 @@ module.exports.handler = newrelic.setLambdaHandler((event, context, callback) =>
         };
 
         console.log('Parser pushing to queue: ' + message);
-        //newrelic.recordCustomEvent(‘GuestbookData’, {message: message});
+        //newrelic.recordCustomEvent('GuestbookData', {message: message});
         sqs.sendMessage(params, function(err, data) {
             if (err) {
                 console.log('Parser error sending to queue: ', err);
