@@ -81,13 +81,13 @@ app.post('/message', function(req, res) {
     };
 
     console.log('Frontend pushing to queue: ' + message);
+
     sqs.sendMessage(params, function(err, data) {
         if (err) {
             console.log('Frontend error sending to queue: ', err);
         }
-    });
-
-    res.status(200).send('OK');
+        res.status(200).send('OK');
+    });   
 });
 
 // Health check
