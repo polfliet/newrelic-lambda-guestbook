@@ -21,7 +21,6 @@ html
       }
       $('#form').submit(function(e){
           e.preventDefault();
-          $('#message').val('');
           $.ajax({
               url:'/message',
               type: 'post',
@@ -30,6 +29,7 @@ html
                   console.log('Message sent', data);
               }
           });
+          $('#message').val('');
       });
       getLastMessage();
       setInterval(getLastMessage, 1000);
