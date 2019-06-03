@@ -190,10 +190,7 @@ Resources:
             #!/bin/bash
             set -o xtrace
             /etc/eks/bootstrap.sh ${ClusterName}
-            /opt/aws/bin/cfn-signal --exit-code $? \
-                     --stack  ${AWS::StackName} \
-                     --resource NodeGroup  \
-                     --region ${AWS::Region}
+            /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource NodeGroup --region ${AWS::Region}
 
 Outputs:
   NodeInstanceRole:
