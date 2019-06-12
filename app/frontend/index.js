@@ -3,17 +3,22 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const http = require('http');
 const querystring = require('querystring');
+console.log('AWS_REGION: ' + process.env.AWS_REGION);
+var workshopPrefix = process.env.WORKSHOP_PREFIX;
+if (workshopPrefix === undefined) {
+    workshopPrefix = '';
+}
+console.log('WORKSHOP_PREFIX: ' + workshopPrefix);
 
 var AWS = require('aws-sdk');
 AWS.config.update({region: process.env.AWS_REGION});
-console.log('AWS_REGION: ' + process.env.AWS_REGION);
 var db = new AWS.DynamoDB();
 var sqs = new AWS.SQS();
 
 // Get SQS queue
 var queueUrl;
 var params = {
-    QueueName: 'guestbook-frontend'
+    QueueName: workshopPrefix + 'guestbook-frontend'
 };
 sqs.getQueueUrl(params, function(err, data) {
     if (err) {
@@ -37,7 +42,7 @@ app.get('/', function (req, res) {
 app.get('/message', function (req, res) {
     console.error(' [x] Get messages from DynamoDB')
     var params = {
-        TableName: 'GUESTBOOK_MESSAGES',
+        TableName: workshopPrefix + 'GUESTBOOK_MESSAGES',
         ExpressionAttributeValues: {
             ':c': {S: '1'}
         },
@@ -63,10 +68,8 @@ app.get('/message', function (req, res) {
 
 // Post a message to the guestbook
 app.post('/message', function(req, res) {
-    //newrelic.setTransactionName('Send message');
     var transaction = newrelic.getTransaction();
     var payload = transaction.createDistributedTracePayload();
-
     var message = req.body.message;
 
     var params = {

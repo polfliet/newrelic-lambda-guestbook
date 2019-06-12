@@ -27,10 +27,19 @@ Parameters:
   Subnets:
     Description: The subnets where workers can be created.
     Type: List<AWS::EC2::Subnet::Id>
+  Prefix:
+    Description: When sharing 1 AWS account with other people, set a prefix to avoid naming conflicts. Leave empty if this is your personal AWS account. The prefix will be added to all created resources. Use the same prefix as earlier.
+    Type: String
+    Default: ''
 
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
+      -
+        Label:
+          default: 'General'
+        Parameters:
+          - Prefix
       -
         Label:
           default: 'EKS Cluster'
@@ -61,7 +70,7 @@ Resources:
   NodeInstanceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: 'NewRelicGuestbookNodeInstanceRole'
+      RoleName: !Sub '${Prefix}NewRelicGuestbookNodeInstanceRole'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -85,7 +94,7 @@ Resources:
       VpcId:
         !Ref VpcId
       Tags:
-      - Key: !Sub 'kubernetes.io/cluster/${ClusterName}'
+      - Key: !Sub 'kubernetes.io/cluster/${Prefix}${ClusterName}'
         Value: 'owned'
   NodeSecurityGroupIngress:
     Type: AWS::EC2::SecurityGroupIngress
@@ -158,9 +167,9 @@ Resources:
         !Ref Subnets
       Tags:
       - Key: Name
-        Value: !Sub '${ClusterName}-${NodeGroupName}-Node'
+        Value: !Sub '${Prefix}${ClusterName}-${NodeGroupName}-Node'
         PropagateAtLaunch: 'true'
-      - Key: !Sub 'kubernetes.io/cluster/${ClusterName}'
+      - Key: !Sub 'kubernetes.io/cluster/${Prefix}${ClusterName}'
         Value: 'owned'
         PropagateAtLaunch: 'true'
     UpdatePolicy:
@@ -189,7 +198,7 @@ Resources:
           !Sub |
             #!/bin/bash
             set -o xtrace
-            /etc/eks/bootstrap.sh ${ClusterName}
+            /etc/eks/bootstrap.sh ${Prefix}${ClusterName}
             /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource NodeGroup --region ${AWS::Region}
 
 Outputs:

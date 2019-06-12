@@ -6,6 +6,11 @@ var db = new AWS.DynamoDB({
     region: process.env.AWS_REGION
 });
 
+var workshopPrefix = process.env.WORKSHOP_PREFIX;
+if (workshopPrefix === undefined) {
+    workshopPrefix = '';
+}
+
 // Worker Lambda function listens to guestbook-parser queue
 module.exports.handler = newrelic.setLambdaHandler((event, context, callback) => {
     // Process each SQS event
@@ -23,7 +28,7 @@ module.exports.handler = newrelic.setLambdaHandler((event, context, callback) =>
         
         // Store message in DynamoDB
         var params = {
-            TableName: 'GUESTBOOK_MESSAGES',
+            TableName: workshopPrefix + 'GUESTBOOK_MESSAGES',
             Item: {
                 'CHANNEL': {S: '1'},
                 'MESSAGE': {S: message},

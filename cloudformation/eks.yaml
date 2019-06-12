@@ -3,6 +3,10 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: 'EKS cluster for New Relic Guestbook'
 
 Parameters:
+  Prefix:
+    Description: When sharing 1 AWS account with other people, set a prefix to avoid naming conflicts. Leave empty if this is your personal AWS account. The prefix will be added to all created resources. Use the same prefix as earlier.
+    Type: String
+    Default: ''
   ClusterName:
     Type: String
     Default: NewRelicGuestbookCluster
@@ -23,7 +27,7 @@ Resources:
       ManagedPolicyArns:
       - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
       - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
-      RoleName: eks-role
+      RoleName: !Sub '${Prefix}eks-role'
   
   # Networking for EKS
   VPC:
@@ -34,7 +38,7 @@ Resources:
       EnableDnsHostnames: true
       Tags:
       - Key: Name
-        Value: 'NewRelicGuestbookVPC'
+        Value: !Sub '${Prefix}NewRelicGuestbookVPC'
   InternetGateway:
     Type: AWS::EC2::InternetGateway
   VPCGatewayAttachment:
@@ -76,7 +80,7 @@ Resources:
         Ref: VPC
       Tags:
       - Key: Name
-        Value: 'NewRelicGuestbookSubnet01'
+        Value: !Sub '${Prefix}NewRelicGuestbookSubnet01'
   Subnet02:
     Type: AWS::EC2::Subnet
     Properties:
@@ -90,7 +94,7 @@ Resources:
         Ref: VPC
       Tags:
       - Key: Name
-        Value: 'NewRelicGuestbookSubnet02'
+        Value: !Sub '${Prefix}NewRelicGuestbookSubnet02'
   Subnet01RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -108,7 +112,7 @@ Resources:
   ControlPlaneSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: NewRelicGuestbookControlPlaneSecurityGroup
+      GroupName: !Sub '${Prefix}NewRelicGuestbookControlPlaneSecurityGroup'
       GroupDescription: Cluster communication with worker nodes
       VpcId:
         Ref: VPC
@@ -117,10 +121,10 @@ Resources:
   EKSCluster:
     Type: AWS::EKS::Cluster
     Properties:
-      Name: {'Ref': 'ClusterName'}
+      Name: !Sub '${Prefix}${ClusterName}'
       Version: '1.11'
       RoleArn:
-        Fn::Sub: arn:aws:iam::${AWS::AccountId}:role/eks-role
+        !Sub arn:aws:iam::${AWS::AccountId}:role/${Prefix}eks-role
       ResourcesVpcConfig:
         SecurityGroupIds:
         - Ref: ControlPlaneSecurityGroup

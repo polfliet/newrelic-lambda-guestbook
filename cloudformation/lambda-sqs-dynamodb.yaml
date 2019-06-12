@@ -6,13 +6,17 @@ Parameters:
   NewRelicAccountId:
     Description: Your New Relic Account ID
     Type: String
+  Prefix:
+    Description: When sharing 1 AWS account with other people, set a prefix to avoid naming conflicts. Leave empty if this is your personal AWS account. The prefix will be added to all created resources.
+    Type: String
+    Default: ''
 
 Resources:
   # Roles
   LambdaRole:
     Type: 'AWS::IAM::Role'
     Properties:
-      RoleName: 'role-lambda'
+      RoleName: !Sub '${Prefix}role-lambda'
       AssumeRolePolicyDocument:
         Statement:
           - Action:
@@ -32,7 +36,7 @@ Resources:
   MessagesTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
-      TableName: GUESTBOOK_MESSAGES
+      TableName: !Sub '${Prefix}GUESTBOOK_MESSAGES'
       AttributeDefinitions:
         - AttributeName: CHANNEL
           AttributeType: S
@@ -51,7 +55,7 @@ Resources:
   FrontendQueue:
     Type: 'AWS::SQS::Queue'
     Properties:
-      QueueName: 'guestbook-frontend'
+      QueueName: !Sub '${Prefix}guestbook-frontend'
       DelaySeconds: '0'
       MaximumMessageSize: '262144'
       MessageRetentionPeriod: '345600'
@@ -60,7 +64,7 @@ Resources:
   ParserQueue:
     Type: 'AWS::SQS::Queue'
     Properties:
-      QueueName: 'guestbook-parser'
+      QueueName: !Sub '${Prefix}guestbook-parser'
       DelaySeconds: '0'
       MaximumMessageSize: '262144'
       MessageRetentionPeriod: '345600'
@@ -74,7 +78,7 @@ Resources:
       Code: 
         S3Bucket: 'newrelic-lambda-guestbook'
         S3Key: 'parser.zip'
-      FunctionName: 'ParserFunction'
+      FunctionName: !Sub '${Prefix}ParserFunction'
       Handler: 'index.handler'
       MemorySize: 512
       Role:
@@ -86,18 +90,19 @@ Resources:
         Variables:
           NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true
           NEW_RELIC_NO_CONFIG_FILE: true
-          NEW_RELIC_APP_NAME: ParserFunction
+          NEW_RELIC_APP_NAME: !Sub '${Prefix}ParserFunction'
           NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
           NEW_RELIC_ACCOUNT_ID: !Ref NewRelicAccountId
           NEW_RELIC_PRIMARY_APPLICATION_ID: !Ref NewRelicAccountId
           NEW_RELIC_TRUSTED_ACCOUNT_KEY: !Ref NewRelicAccountId
+          WORKSHOP_PREFIX: !Ref Prefix
   WorkerFunction:
     Type: 'AWS::Lambda::Function'
     Properties: 
       Code: 
         S3Bucket: 'newrelic-lambda-guestbook'
         S3Key: 'worker.zip'
-      FunctionName: 'WorkerFunction'
+      FunctionName: !Sub '${Prefix}WorkerFunction'
       Handler: 'index.handler'
       MemorySize: 512
       Role:
@@ -109,11 +114,12 @@ Resources:
         Variables:
           NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true
           NEW_RELIC_NO_CONFIG_FILE: true
-          NEW_RELIC_APP_NAME: WorkerFunction
+          NEW_RELIC_APP_NAME: !Sub '${Prefix}WorkerFunction'
           NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
           NEW_RELIC_ACCOUNT_ID: !Ref NewRelicAccountId
           NEW_RELIC_PRIMARY_APPLICATION_ID: !Ref NewRelicAccountId
           NEW_RELIC_TRUSTED_ACCOUNT_KEY: !Ref NewRelicAccountId
+          WORKSHOP_PREFIX: !Ref Prefix
 
   # SQS - Lambda mapping
   FrontendQueueToParserMapping:
