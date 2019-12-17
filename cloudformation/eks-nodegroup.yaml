@@ -21,8 +21,11 @@ Parameters:
     Description: The security group of the cluster control plane.
     Type: AWS::EC2::SecurityGroup::Id
     Default: NewRelicGuestbookControlPlaneSecurityGroup
-  VpcId:
+  VpcIdWorkers:
     Description: The VPC of the worker instances
+    Type: AWS::EC2::VPC::Id
+  VpcIdControlPlane:
+    Description: The VPC of the control plane
     Type: AWS::EC2::VPC::Id
   Subnets:
     Description: The subnets where workers can be created.
@@ -57,7 +60,8 @@ Metadata:
         Label:
           default: 'Worker Network Configuration'
         Parameters:
-          - VpcId
+          - VpcIdWorkers
+          - VpcIdControlPlane
           - Subnets
 
 Resources:
@@ -90,9 +94,9 @@ Resources:
   NodeSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security group for all nodes in the cluster
+      GroupDescription: Security group for all worker nodes in the cluster
       VpcId:
-        !Ref VpcId
+        !Ref VpcIdWorkers
       Tags:
       - Key: !Sub 'kubernetes.io/cluster/${Prefix}${ClusterName}'
         Value: 'owned'
@@ -183,7 +187,7 @@ Resources:
       AssociatePublicIpAddress: 'true'
       IamInstanceProfile: !Ref NodeInstanceProfile
       ImageId: !Ref NodeImageId
-      InstanceType: t2.small
+      InstanceType: t2.medium
       KeyName: !Ref KeyName
       SecurityGroups:
       - !Ref NodeSecurityGroup
